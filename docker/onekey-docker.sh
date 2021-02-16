@@ -26,6 +26,7 @@ WORK_SPACE="${SCRIPT_FOLDER}/onekey-jd-docker-workspace"
 JD_PATH=""
 CONFIG_PATH=""
 LOG_PATH=""
+SCRIPTS_PATH=""
 
 HAS_IMAGE=false
 NEW_IMAGE=true
@@ -77,11 +78,11 @@ echo -e "\e[33m请输入配置文件保存的绝对路径,直接回车为当前�
 read jd_path
 JD_PATH=$jd_path
 if [ -z "$jd_path" ]; then
-    JD_PATH=$SCRIPT_FOLDER
+    JD_PATH=$SCRIPT_FOLDER/jd-docker
 fi
-CONFIG_PATH=$JD_PATH/jd-base-docker/config
-LOG_PATH=$JD_PATH/jd-base-docker/log
-SCRPTS_PATH=$JD_PATH/jd-base-docker/scripts
+CONFIG_PATH=$JD_PATH/config
+LOG_PATH=$JD_PATH/log
+SCRIPTS_PATH=$JD_PATH/scripts
 
 # 检测镜像是否存在
 if [ ! -z "$(docker images -q $DOCKER_IMAGE 2> /dev/null)" ]; then
@@ -149,15 +150,15 @@ input_panel_port
 # 配置信息收集完成，开始安装
 #
 
-log "\n1.创建配置文件目录"
+log "\n1.创建文件目录"
 mkdir -p $CONFIG_PATH
 mkdir -p $LOG_PATH
-
+mkdir -p $SCRIPTS_PATH
 
 if [ $NEW_IMAGE = true ]; then
     log "\n2.1.正在创建新镜像..."
+    rm -fr $WORK_SPACE
     mkdir -p $WORK_SPACE
-    rm -fr $WORK_SPACE/Dockerfile
     if [ $HAS_IMAGE = true ]; then
         docker image rm -f $DOCKER_IMAGE
     fi
@@ -176,7 +177,7 @@ log "\n3.创建容器并运行"
 docker run -dit \
     -v $CONFIG_PATH:/jd/config \
     -v $LOG_PATH:/jd/log \
-    -v $SCRPTS_PATH:/jd/scripts \
+    -v $SCRIPTS_PATH:/jd/scripts \
     -p $PANEL_PORT:5678 \
     --name $CONTAINER_NAME \
     --hostname jd \
